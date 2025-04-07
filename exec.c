@@ -6,7 +6,7 @@ uint32_t registers[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 Seq_T recycled_ids;
 Seq_T all_segments;
 
-#define MOD_VAL 1UL << 32
+#define MOD_VAL (UINT64_C(1) << 32)
 
 void print_segments() {
         for (int i = 0; i < Seq_length(all_segments); i++) {
@@ -114,6 +114,7 @@ void print_binary(uint32_t n)
 
 void execute_LV(uint8_t A, uint32_t val)
 {
+        printf("Inside loadval\n");
         registers[A] = val;
 }
 
@@ -135,6 +136,7 @@ void execute_LV(uint8_t A, uint32_t val)
 
 void execute_CMOV(uint8_t A, uint8_t B, uint8_t C)
 {
+        printf("Inside cmov\n");
         if (registers[C] != 0)
         {
                 registers[A] = registers[B];
@@ -143,20 +145,22 @@ void execute_CMOV(uint8_t A, uint8_t B, uint8_t C)
 
 void execute_SLOAD(uint8_t A, uint8_t B, uint8_t C)
 {
+        printf("Inside sload\n");
         UArray_T curr_segment = (UArray_T)Seq_get(all_segments, registers[B]);
         registers[A] = *(uint32_t *)UArray_at(curr_segment, registers[C]);
-        fprintf(stderr, "ra: %u", registers[A]);
+        //fprintf(stderr, "ra: %u", registers[A]);
 }
 
 void execute_SSTORE(uint8_t A, uint8_t B, uint8_t C)
 {
+        printf("Inside sstore\n");
         UArray_T curr_segment = (UArray_T)Seq_get(all_segments, registers[A]);
         uint32_t *spot = (uint32_t *)UArray_at(curr_segment, registers[B]);
         *spot = registers[C];
 
-        fprintf(stderr, "after SSTORE: ");
-        print_segments();
-        print_registers();
+        // fprintf(stderr, "after SSTORE: ");
+        // print_segments();
+        // print_registers();
 }
 
 void free_recycled_ids()
@@ -170,16 +174,17 @@ void free_recycled_ids()
 
 void execute_HALT()
 {
+        printf("Inside halt\n");
         // free memory
         for (int i = 0; i < Seq_length(all_segments); i++)
         {
                 void *elem = Seq_get(all_segments, i);
                 if (elem != NULL) {
-                        fprintf(stderr, "element %d is not NULL\n", i);
+                        //fprintf(stderr, "element %d is not NULL\n", i);
                         UArray_T curr_segment = (UArray_T)elem;
                         UArray_free(&curr_segment);
                 } else {
-                        fprintf(stderr, "element %d is NULL\n", i);
+                        //fprintf(stderr, "element %d is NULL\n", i);
                 }
         }
         Seq_free(&all_segments);
@@ -190,12 +195,15 @@ void execute_HALT()
 
 void execute_OUT(uint8_t C)
 {
+        printf("Inside out\n");
         assert(registers[C] <= 255);
         printf("%c", (char)registers[C]);
+        //print_registers();
 }
 
 void execute_INPUT(uint8_t C)
 {
+        printf("Inside input\n");
         int c = getchar();
         if (c == -1) {
                 execute_LV(C, (unsigned)(0xFFFFFFFF));
@@ -208,59 +216,62 @@ void execute_INPUT(uint8_t C)
 
 void execute_ADD(uint8_t A, uint8_t B, uint8_t C)
 {
-        printf("mod val is %ld", MOD_VAL);
+        printf("Inside add\n");
         registers[A] = (registers[B] + registers[C]) % MOD_VAL;
 }
 
 void execute_MUL(uint8_t A, uint8_t B, uint8_t C)
 {
-        printf("mod val is %ld", MOD_VAL);
+        printf("Inside mul\n");
         registers[A] = (registers[B] * registers[C]) % MOD_VAL;
 }
 
 void execute_DIV(uint8_t A, uint8_t B, uint8_t C)
 {
-
+        printf("Inside div\n");
         registers[A] = registers[B] / registers[C];
 }
 
 void execute_NAND(uint8_t A, uint8_t B, uint8_t C)
 {
+        printf("Inside nand\n");
         registers[A] = ~(registers[B] & registers[C]);
 }
 
 void execute_ACTIVATE(uint8_t B, uint8_t C)
 {
+        printf("Inside activate\n");
         //fprintf(stderr, "before activating:");
         //print_segments();
-        fprintf(stderr, "starting activate\n");
-        print_recycled_ids();
+        //fprintf(stderr, "starting activate\n");
+        // print_recycled_ids();
         UArray_T new_seg = UArray_new(registers[C], 4);
         int id;
         if (Seq_length(recycled_ids) != 0) {
                 int *id_pointer = (int*)Seq_remlo(recycled_ids);
                 id = *id_pointer;
-                fprintf(stderr, "non-empty, id is %d\n", id);
+                // fprintf(stderr, "non-empty, id is %d\n", id);
                 //UArray_T prev_segment = (UArray_T)Seq_put(all_segments, id, new_seg);
                 //UArray_free(&prev_segment);
                 Seq_put(all_segments, id, new_seg);
-                fprintf(stderr, "made it here\n");
+                // fprintf(stderr, "made it here\n");
                 free(id_pointer);
         } else {
                 id = Seq_length(all_segments);
-                fprintf(stderr, "empty, id is %d\n", id);
+                // fprintf(stderr, "empty, id is %d\n", id);
                 Seq_addhi(all_segments, new_seg);
         }
         
         registers[B] = id;
 
-        fprintf(stderr, "after activating:\n");
-        print_segments();
-        print_registers();
+        // fprintf(stderr, "after activating:\n");
+//         print_segments();
+//         print_registers();
 }
 
 void execute_INACTIVATE(uint8_t C) 
 {
+        printf("Inside inactivate\n");
         assert(registers[C] != 0);
 
         uint32_t *id = malloc(sizeof(*id));
@@ -270,19 +281,32 @@ void execute_INACTIVATE(uint8_t C)
 
         Seq_put(all_segments, *id, (void*)NULL);
 
-        fprintf(stderr, "id in inactivate is %u", *id);
+        //fprintf(stderr, "id in inactivate is %u", *id);
         Seq_addhi(recycled_ids, id);
 
-        fprintf(stderr, "after inactivating:\n");
-        print_segments();
-        print_registers();
+        //fprintf(stderr, "after inactivating:\n");
+        // print_segments();
+        // print_registers();
 
 }
 
-void execute_LOADP(uint8_t B, uint8_t C)
+UArray_T execute_LOADP(uint8_t B, uint8_t C, int *new_pc)
 {
-        (void) B;
-        (void) C;
+        printf("Inside laodp\n");
+        *new_pc = registers[C];
+        if (registers[B] == 0) {
+                //fprintf(stderr, "registers[B] is 0, returning NULL\n");
+                return NULL;
+        }
+
+        UArray_T segment_to_copy = Seq_get(all_segments, registers[B]);
+        UArray_T new_segment = UArray_copy(segment_to_copy, UArray_length(segment_to_copy));
+        UArray_T old = Seq_put(all_segments, 0, new_segment);
+        UArray_free(&old); 
+
+        //print_segments();
+
+        return new_segment;
 }
 
 // uint64_t handle_instruction(uint32_t instruction, Seq_T all_segments)

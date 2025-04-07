@@ -33,6 +33,8 @@ extern void build_inactivate_test1(Seq_T stream);
 extern void build_inactivate_test2(Seq_T stream);
 extern void build_sstore_test1(Seq_T stream);
 extern void build_sload_test1(Seq_T stream);
+extern void build_loadp_test1(Seq_T stream);
+extern void build_loadp_test2(Seq_T stream);
 /*
 extern void build_add_test(Seq_T instructions);
 extern void build_add_output_test(Seq_T instructions);
@@ -56,7 +58,7 @@ static struct test_info {
         //{"folder/input2", "Hello", "Hello", build_input_test2},
         //{ "folder/cmov1", NULL, "FF", build_cmov_test1},
         //{ "folder/cmov2", NULL, "FF", build_cmov_test2 },
-        //{ "folder/add1", NULL, "COOL", build_add_test1 },
+        //{ "folder/add1", NULL, "COOL", build_add_test1 }
         //{ "folder/add2", NULL, "H", build_add_test2 },
         //{ "folder/mul1", NULL, "B", build_mul_test1 },
         //{ "folder/mul2", NULL, "A", build_mul_test2 },
@@ -67,7 +69,9 @@ static struct test_info {
         //{"folder/inactivate1", NULL, "", build_inactivate_test1}
         //{"folder/inactivate2", NULL, "", build_inactivate_test2},
         //{"folder/sstore1", NULL, "", build_sstore_test1},
-        {"folder/sload1", NULL, "", build_sload_test1}
+        //{"folder/sload1", NULL, "", build_sload_test1}
+        //{"folder/loadp1", NULL, "", build_loadp_test1},
+        {"folder/loadp2", NULL, "", build_loadp_test2}
 };
 
 #define NTESTS (sizeof(tests)/sizeof(tests[0]))

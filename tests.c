@@ -48,6 +48,13 @@ Um_instruction loadval(unsigned ra, unsigned val) {
         return word;
 }
 
+Um_instruction loadval2(unsigned val) {
+        Um_instruction word = 0;
+        word = 0x20000011; //val
+
+        return word;
+}
+
 
 /* Wrapper functions for each of the instructions */
 
@@ -106,6 +113,11 @@ static inline Um_instruction activate(Um_register b, Um_register c)
 static inline Um_instruction inactivate(Um_register c)
 {
         return three_register(INACTIVATE, 0, 0, c);
+}
+
+static inline Um_instruction loadP(Um_register b, Um_register c)
+{
+        return three_register(LOADP, 0, b, c);
 }
 
 Um_instruction out(Um_register c) {
@@ -381,16 +393,41 @@ void build_sstore_test1(Seq_T stream)
 
 void build_sload_test1(Seq_T stream)
 {
-        append(stream, loadval(r4, 5)); /* load length of new segment */
-        append(stream, activate(r0, r4)); /* segment id goes into r0 */
-        append(stream, loadval(r3, 65)); /* load value to insert */
-        append(stream, loadval(r2, 3)); /* load index to insert at */
+        append(stream, loadval(r4, 5)); 
+        append(stream, activate(r0, r4)); 
+        append(stream, loadval(r3, 65)); 
+        append(stream, loadval(r2, 3)); 
         append(stream, sstore(r0, r2, r3));
         append(stream, sload(r4, r0, r2));
         append(stream, out(r4));
-        //append(stream, halt());
+        append(stream, halt());
 }
 
+void build_loadp_test1(Seq_T stream)
+{
+        append(stream, loadval(r0, 65)); 
+        append(stream, loadval(r1, 0)); /* put id 0 into r1 */
+        append(stream, loadval(r2, 5)); /* load index to skip to*/
+        append(stream, loadP(r1, r2)); /* skip to index 4 of seg_zero*/
+        append(stream, out(r0)); /* should not print */
+        append(stream, halt()); /* should skip to here */
+}
+
+void build_loadp_test2(Seq_T stream)
+{
+        append(stream, loadval(r0, 65)); /* load A into r0 */
+        append(stream, loadval(r5, 5)); /* load length 5 of new segment into r5 */
+        append(stream, activate(r1, r5)); /* id is in register 1, segment 1 is 5 long */ 
+        append(stream, loadval(r2, 29360128)); /* register 2 holds halt instruction before shifting */
+        append(stream, loadval(r3, 64)); /* load 64 into r3 */
+        append(stream, mul(r4, r2, r3)); /* multiply/shift to get halt instruction in register 4*/
+        append(stream, loadval(r6, 3)); /* load insertion index 3 into r6 */
+        append(stream, sstore(r1, r6, r4)); /* store halt into index 3 of seg 1 */
+        append(stream, loadP(r1, r6)); /* duplicate segment 1, start program counter at 3 (the halt instruction) */
+        append(stream, out(r0)); //This should not print out
+        append(stream, halt());
+
+}
 
 // void built_LV_test(Seq_T stream)
 // {

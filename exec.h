@@ -25,7 +25,7 @@ void execute_DIV(uint8_t A, uint8_t B, uint8_t C);
 void execute_NAND(uint8_t A, uint8_t B, uint8_t C);
 void execute_ACTIVATE(uint8_t B, uint8_t C);
 void execute_INACTIVATE(uint8_t C);
-void execute_LOADP(uint8_t B, uint8_t C);
+UArray_T execute_LOADP(uint8_t B, uint8_t C, int *new_pc);
 void initialize_program(UArray_T segment_zero);
 
 #endif

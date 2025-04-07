@@ -28,32 +28,32 @@ int main(int argc, char *argv[])
         int pc = 0;
         while (pc < UArray_length(segment_zero)) {
                 // decode
+                //fprintf(stderr, "pc is %d\n", pc);
                 uint32_t instruction = *(uint32_t*)UArray_at(segment_zero, pc);
-                //fprintf(stderr, "instruction is %u\n", instruction);
-                //print_binary(instruction);
 
-                int64_t new_pc = handle_instruction(instruction);
+                //fprintf(stderr, "Printing segment_zero\n");
+                // for (int i = 0; i < UArray_length(segment_zero); i++)
+                // {
+                //         fprintf(stderr, "%u ", *(uint32_t*)UArray_at(segment_zero, i));
+                // }
+                // fprintf(stderr, "\n");
                 
-                // //Change it to -1 vs other value
-                if (new_pc != NULL) {
-                        segment_zero = new_pc;
-                } else {
-                        pc++;
-                }
-                //pc++;
-                // (void)is_loadprogram;
+                
+                UArray_T new_segment_zero = handle_instruction(instruction, &pc);
 
-                //fprintf(stderr, "Counter: %d\n\n", pc);
-                /*if (opcode == 13) {
-                        // load val
-                } else {
-                        // three registers - inside here, do switch
-                        
-                }*/
-                //decode_instruction(instruction, );
+                if (new_segment_zero != NULL) {
+                        //fprintf(stderr, "Got here\n");
+                        segment_zero = new_segment_zero;
+                }
 
         }
-        execute_HALT();
+        // fprintf(stderr, "After loop: Printing segment_zero\n");
+        // for (int i = 0; i < UArray_length(segment_zero); i++)
+        // {
+        //         fprintf(stderr, "%u ", *(uint32_t*)UArray_at(segment_zero, i));
+        // }
+        // fprintf(stderr, "\n");
+
         /*printf("After assigning the instructions\n");
         for (int i = 0; i < Seq_length(segment_zero); i++) {
                 
